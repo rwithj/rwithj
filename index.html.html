@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RevenueWithJohn — AI Calling Agents</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#080808;
+  --bg1:#0f0f0f;
+  --bg2:#141414;
+  --bg3:#1a1a1a;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.13);
+  --white:#ffffff;
+  --off:rgba(255,255,255,0.62);
+  --dim:rgba(255,255,255,0.32);
+  --gold:#E9BA4C;
+  --gold-dim:rgba(233,186,76,0.10);
+  --gold-bd:rgba(233,186,76,0.22);
+  --r:14px;--r2:20px;--r3:28px;
+}
+body{background:var(--bg);color:var(--white);font-family:'Inter',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+img{display:block;max-width:100%}
+a{text-decoration:none;color:inherit}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(233,186,76,0.45)}50%{box-shadow:0 0 0 10px rgba(233,186,76,0)}}
+@keyframes scrollUp{0%{transform:translateY(0)}100%{transform:translateY(-50%)}}
+@keyframes ring{0%{transform:rotate(0deg)}15%{transform:rotate(20deg)}30%{transform:rotate(-15deg)}45%{transform:rotate(10deg)}60%{transform:rotate(-5deg)}75%{transform:rotate(3deg)}100%{transform:rotate(0deg)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+@keyframes countUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* Scroll reveal */
+.rev{opacity:1;transform:none;transition:opacity .75s cubic-bezier(.16,1,.3,1),transform .75s cubic-bezier(.16,1,.3,1)}
+.rev.rl{transform:none}
+.rev.rr{transform:none}
+.rev.rs{transform:none}
+.rev.on{opacity:1;transform:none}
+.d1{transition-delay:.07s}.d2{transition-delay:.14s}.d3{transition-delay:.21s}
+.d4{transition-delay:.28s}.d5{transition-delay:.35s}.d6{transition-delay:.42s}.d7{transition-delay:.49s}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 52px;height:66px;
+  background:rgba(8,8,8,0.85);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);
+  transition:height .3s,background .3s;
+}
+nav.s{height:56px;background:rgba(8,8,8,0.98)}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;white-space:nowrap}
+.logo em{color:var(--gold);font-style:normal}
+.nav-mid{
+  display:flex;gap:28px;list-style:none;
+  position:absolute;left:50%;transform:translateX(-50%);
+}
+.nav-mid a{font-size:13px;font-weight:500;color:var(--off);letter-spacing:.3px;transition:color .2s;white-space:nowrap}
+.nav-mid a:hover{color:var(--white)}
+.nav-r{display:flex;gap:10px;align-items:center}
+.nav-wa{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 18px;font-size:12px;font-weight:600;letter-spacing:.3px;
+  border:1px solid var(--border2);border-radius:100px;color:var(--white);transition:all .2s;
+}
+.nav-wa:hover{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.28)}
+.nav-cta{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:9px 22px;font-size:12px;font-weight:700;letter-spacing:.4px;
+  background:var(--white);color:#000;border-radius:100px;transition:all .2s;
+}
+.nav-cta:hover{background:var(--gold);transform:translateY(-1px)}
+
+/* ── HERO ── */
+#hero{
+  position:relative;min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:90px 24px 80px;overflow:hidden;
+}
+.hero-bg{
+  position:absolute;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 20%, rgba(233,186,76,0.07) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 80% 80%, rgba(233,186,76,0.04) 0%, transparent 60%);
+}
+.hero-grid{
+  position:absolute;inset:0;z-index:0;
+  background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);
+  background-size:64px 64px;
+  -webkit-mask-image:radial-gradient(ellipse 80% 70% at 50% 30%,black 30%,transparent 100%);
+  mask-image:radial-gradient(ellipse 80% 70% at 50% 30%,black 30%,transparent 100%);
+}
+.hero-body{position:relative;z-index:1;max-width:920px;animation:fadeUp .9s cubic-bezier(.16,1,.3,1) both}
+
+/* Phone ring animation */
+.hero-phone{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--gold-dim);border:1px solid var(--gold-bd);
+  border-radius:100px;padding:8px 20px;margin-bottom:32px;
+  font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);
+}
+.hero-phone-ico{display:inline-block;animation:ring 2.5s ease infinite}
+
+.hero-h1{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(62px,10vw,138px);
+  line-height:.93;letter-spacing:3px;
+  margin-bottom:6px;
+}
+.hero-h1 span{
+  display:block;
+  background:linear-gradient(90deg,var(--gold) 0%,#f7e09a 50%,var(--gold) 100%);
+  background-size:200% auto;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:shimmer 4s linear infinite;
+}
+.hero-tag{
+  font-size:clamp(14px,1.7vw,19px);font-weight:500;line-height:1.55;
+  color:rgba(255,255,255,.84);max-width:640px;margin:28px auto 14px;
+}
+.hero-tag strong{color:var(--white);font-weight:700}
+.hero-desc{
+  font-size:clamp(13px,1.3vw,15.5px);color:var(--off);
+  max-width:560px;margin:0 auto 48px;line-height:1.72;
+}
+.hero-btn{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:18px 50px;font-size:13px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
+  background:var(--white);color:#000;border:none;border-radius:100px;
+  cursor:pointer;transition:all .25s;animation:pulse 2.5s ease infinite;
+}
+.hero-btn:hover{background:var(--gold);transform:translateY(-3px);box-shadow:0 24px 60px rgba(233,186,76,.3);animation:none}
+
+/* ── SECTION BASE ── */
+.s{padding:100px 24px}
+.s-alt{background:var(--bg1)}
+.w{max-width:1100px;margin:0 auto}
+.lbl{display:inline-block;font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--dim);margin-bottom:14px}
+.h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(38px,5.5vw,70px);letter-spacing:1.5px;line-height:1.0;margin-bottom:18px}
+.lead{font-size:clamp(14px,1.4vw,16px);color:var(--off);line-height:1.72;max-width:520px;margin-bottom:56px}
+
+/* ── PROBLEM ── */
+.prob-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;
+}
+.prob-cell{
+  padding:28px 24px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);
+  background:var(--bg2);transition:background .22s;cursor:default;
+}
+.prob-cell:hover{background:var(--bg3)}
+.prob-ico{font-size:22px;margin-bottom:14px;display:block}
+.prob-cell h4{font-size:15px;font-weight:700;margin-bottom:8px;letter-spacing:-.2px}
+.prob-cell p{font-size:13px;color:var(--off);line-height:1.62}
+
+/* ── WHY US ── */
+.why-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.why-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:32px 28px;
+  position:relative;overflow:hidden;transition:transform .3s,border-color .3s,background .3s;
+}
+.why-card:hover{transform:translateY(-5px);border-color:var(--gold-bd);background:var(--bg3)}
+.why-badge{
+  display:inline-block;font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;
+  color:var(--gold);background:var(--gold-dim);border:1px solid var(--gold-bd);
+  padding:4px 12px;border-radius:100px;margin-bottom:18px;
+}
+.why-card h4{font-size:16px;font-weight:700;margin-bottom:10px;letter-spacing:-.3px;line-height:1.3}
+.why-card p{font-size:13.5px;color:var(--off);line-height:1.68}
+
+/* ── PAIN POINTS ── */
+.pain-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:20px}
+.pain-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;
+  transition:transform .3s,border-color .3s,box-shadow .3s;
+}
+.pain-card:hover{transform:translateY(-6px);border-color:var(--border2);box-shadow:0 24px 60px rgba(0,0,0,.5)}
+.pain-card:hover .pain-img{transform:scale(1.05)}
+.pain-img-wrap{overflow:hidden;height:196px}
+.pain-img{width:100%;height:100%;object-fit:cover;filter:brightness(.72) saturate(.85);transition:transform .6s cubic-bezier(.16,1,.3,1)}
+.pain-body{padding:22px}
+.pain-tag{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:8px}
+.pain-card h3{font-size:17px;font-weight:700;margin-bottom:10px;letter-spacing:-.3px}
+.pain-card p{font-size:13px;color:var(--off);line-height:1.65}
+.ck{color:var(--gold);font-weight:700;margin-right:4px}
+
+/* ── INVISIBLE SECTION ── */
+#invisible{text-align:center}
+.inv-wrap{max-width:800px;margin:0 auto}
+.inv-boxes{
+  display:grid;grid-template-columns:1fr 1fr;gap:2px;
+  border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-bottom:40px;
+}
+.inv-box{padding:44px 32px;background:var(--bg2);transition:background .2s}
+.inv-box:first-child{border-right:1px solid var(--border)}
+.inv-box:hover{background:var(--bg3)}
+.inv-num{font-family:'Bebas Neue',sans-serif;font-size:clamp(44px,6vw,68px);letter-spacing:2px;line-height:1;margin-bottom:8px}
+.inv-num.gold{color:var(--gold)}
+.inv-num.dim{color:var(--dim)}
+.inv-lbl{font-size:15px;font-weight:700;margin-bottom:5px}
+.inv-sub{font-size:12px;color:var(--dim)}
+.inv-list{list-style:none;max-width:420px;margin:0 auto 44px;display:flex;flex-direction:column;gap:10px}
+.inv-list li{
+  display:flex;align-items:center;gap:12px;font-size:14px;color:var(--off);
+  padding:13px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  transition:border-color .2s,background .2s;
+}
+.inv-list li:hover{background:var(--bg3);border-color:var(--border2)}
+.inv-list li::before{
+  content:'✕';color:#ff5555;font-size:10px;font-weight:800;
+  background:rgba(255,80,80,.1);border:1px solid rgba(255,80,80,.2);
+  width:20px;height:20px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.inv-q{font-size:18px;font-weight:600;max-width:500px;margin:0 auto;line-height:1.55}
+.inv-q span{color:var(--gold)}
+
+/* ── BENEFITS ── */
+.ben-hd{text-align:center;margin-bottom:64px}
+.ben-block{
+  display:grid;grid-template-columns:1fr 1fr;
+  border:1px solid var(--border);border-radius:var(--r3);overflow:hidden;margin-bottom:20px;
+  transition:border-color .3s;
+}
+.ben-block:hover{border-color:var(--border2)}
+.ben-block.flip .bi{order:2}.ben-block.flip .bt{order:1}
+.bi{overflow:hidden;min-height:320px}
+.bi img{
+  width:100%;height:100%;object-fit:cover;
+  filter:brightness(.72) saturate(.85);
+  transition:transform .7s cubic-bezier(.16,1,.3,1),filter .4s;
+}
+.ben-block:hover .bi img{transform:scale(1.06);filter:brightness(.85) saturate(1)}
+.bt{padding:52px 48px;background:var(--bg2);display:flex;flex-direction:column;justify-content:center}
+.ben-badge{
+  display:inline-block;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:var(--gold);background:var(--gold-dim);border:1px solid var(--gold-bd);
+  padding:5px 14px;border-radius:100px;margin-bottom:22px;width:fit-content;
+}
+.bt h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,3.2vw,42px);letter-spacing:1px;line-height:1.05;margin-bottom:16px}
+.bt p{font-size:14px;color:var(--off);line-height:1.72;margin-bottom:26px}
+.fl{list-style:none;display:flex;flex-direction:column;gap:9px}
+.fl li{display:flex;align-items:center;gap:10px;font-size:13.5px;color:rgba(255,255,255,.72)}
+.fl li::before{content:'✓';font-size:9px;font-weight:900;color:#000;background:var(--gold);width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* ── HOW IT WORKS ── */
+.how-hd{text-align:center;margin-bottom:60px}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden}
+.step{padding:40px 28px 32px;border-right:1px solid var(--border);position:relative;overflow:hidden;background:var(--bg2);transition:background .25s}
+.step:last-child{border-right:none}
+.step:hover{background:var(--bg3)}
+.step-nbg{font-family:'Bebas Neue',sans-serif;font-size:100px;letter-spacing:-3px;color:rgba(255,255,255,.04);line-height:1;position:absolute;top:8px;right:12px;pointer-events:none}
+.step-n{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:3px;color:var(--gold);margin-bottom:18px;display:block}
+.step h3{font-size:15px;font-weight:700;margin-bottom:10px;letter-spacing:-.2px;line-height:1.35}
+.step p{font-size:13px;color:var(--off);line-height:1.65;margin-bottom:18px}
+.step-dots{display:flex;flex-direction:column;gap:7px}
+.step-dot{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--dim)}
+.step-dot::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--gold);flex-shrink:0}
+.step-img{width:100%;height:130px;object-fit:cover;border-radius:10px;margin-top:20px;opacity:.6;filter:grayscale(20%);transition:opacity .3s}
+.step:hover .step-img{opacity:.85}
+
+/* ── TESTIMONIALS ── */
+.testi-hd{text-align:center;margin-bottom:52px}
+.testi-outer{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+  height:580px;overflow:hidden;
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 10%,#000 90%,transparent 100%);
+  mask-image:linear-gradient(to bottom,transparent 0%,#000 10%,#000 90%,transparent 100%);
+}
+.t-col{overflow:hidden}
+.t-track{display:flex;flex-direction:column;gap:14px;animation:scrollUp 22s linear infinite}
+.t-track.b{animation-duration:30s}
+.t-track.c{animation-duration:38s;animation-direction:reverse}
+.t-track:hover{animation-play-state:paused}
+.tcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:22px 20px;flex-shrink:0;transition:border-color .2s,background .2s}
+.tcard:hover{border-color:var(--border2);background:var(--bg3)}
+.tcard-q{font-size:13px;line-height:1.7;color:rgba(255,255,255,.78);margin-bottom:18px;font-style:italic;position:relative;padding-left:18px}
+.tcard-q::before{content:'"';position:absolute;left:0;top:-2px;font-size:22px;color:var(--gold);font-style:normal;line-height:1}
+.tcard-ft{display:flex;align-items:center;gap:10px}
+.tcard-av{width:34px;height:34px;border-radius:50%;background:var(--gold-dim);border:1px solid var(--gold-bd);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--gold);flex-shrink:0}
+.tcard-name{font-size:13px;font-weight:600;line-height:1.2}
+.tcard-role{font-size:11px;color:var(--dim);margin-top:2px}
+
+/* ── STATS ── */
+#stats{background:var(--bg);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:70px 24px}
+.stats-row{max-width:1000px;margin:0 auto;display:flex;justify-content:space-around;align-items:center;flex-wrap:wrap;gap:28px}
+.stat-item{text-align:center}
+.stat-n{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,6vw,74px);letter-spacing:1px;line-height:1}
+.stat-n em{color:var(--gold);font-style:normal}
+.stat-l{font-size:13px;color:var(--dim);margin-top:7px;letter-spacing:.3px}
+.stat-sep{width:1px;height:56px;background:var(--border);align-self:center}
+
+/* ── FINAL CTA ── */
+#cta{background:var(--bg1);padding:100px 24px}
+.cta-block{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--border);border-radius:var(--r3);overflow:hidden}
+.cta-img{position:relative;min-height:420px;overflow:hidden}
+.cta-img img{width:100%;height:100%;object-fit:cover;filter:brightness(.45)}
+.cta-img::after{content:'';position:absolute;inset:0;background:linear-gradient(to right,rgba(8,8,8,.4),transparent)}
+.cta-txt{padding:60px 52px;background:var(--bg2);display:flex;flex-direction:column;justify-content:center}
+.cta-txt .h2{font-size:clamp(28px,3.4vw,46px);margin-bottom:14px}
+.cta-txt .body{font-size:14px;color:var(--off);line-height:1.72;margin-bottom:10px}
+.cta-txt .note{font-size:13px;color:var(--dim);margin-bottom:34px;line-height:1.6}
+.cta-txt .note strong{color:var(--off)}
+.cta-btns{display:flex;flex-direction:column;gap:12px}
+.btn-main{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:16px 28px;font-size:12px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;background:var(--white);color:#000;border:none;border-radius:100px;cursor:pointer;transition:all .22s}
+.btn-main:hover{background:var(--gold);transform:translateY(-2px);box-shadow:0 16px 40px rgba(233,186,76,.25)}
+.btn-sec{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:15px 28px;font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;background:transparent;border:1px solid var(--border2);color:var(--white);border-radius:100px;cursor:pointer;transition:all .22s}
+.btn-sec:hover{border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.05)}
+.ps{margin-top:20px;font-size:12px;color:var(--dim);line-height:1.65}
+.ps strong{color:var(--off)}
+
+/* ── FOOTER ── */
+footer{background:var(--bg);border-top:1px solid var(--border);padding:64px 24px 36px}
+.foot{max-width:1100px;margin:0 auto}
+.foot-top{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:64px;margin-bottom:48px}
+.foot-logo{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;display:block;margin-bottom:14px}
+.foot-logo em{color:var(--gold);font-style:normal}
+.foot-desc{font-size:13.5px;color:var(--off);line-height:1.72;max-width:260px}
+.foot-col h5{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--dim);margin-bottom:20px}
+.foot-col ul{list-style:none;display:flex;flex-direction:column;gap:12px}
+.foot-col a{font-size:14px;color:var(--off);transition:color .2s}
+.foot-col a:hover{color:var(--white)}
+.foot-bot{padding-top:24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--dim);flex-wrap:wrap;gap:8px}
+.foot-bot a{color:var(--off);transition:color .2s}
+.foot-bot a:hover{color:var(--white)}
+
+/* WhatsApp */
+.wa{position:fixed;bottom:28px;right:28px;z-index:999;width:52px;height:52px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 6px 24px rgba(37,211,102,.45);transition:transform .2s,box-shadow .2s}
+.wa:hover{transform:scale(1.12);box-shadow:0 10px 32px rgba(37,211,102,.6)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:960px){
+  nav{padding:0 20px}.nav-mid{display:none}
+  .steps{grid-template-columns:1fr 1fr}
+  .step:nth-child(2){border-right:none}.step:nth-child(3){border-right:1px solid var(--border)}.step:last-child{border-right:none}.step{border-bottom:1px solid var(--border)}
+  .ben-block,.cta-block{grid-template-columns:1fr}
+  .ben-block.flip .bi,.ben-block.flip .bt{order:unset}
+  .bi{min-height:260px}
+  .inv-boxes{grid-template-columns:1fr 1fr}
+  .foot-top{grid-template-columns:1fr;gap:36px}
+  .testi-outer{grid-template-columns:1fr;height:420px}.t-col:not(:first-child){display:none}
+}
+@media(max-width:600px){
+  .steps{grid-template-columns:1fr}.step{border-right:none!important;border-bottom:1px solid var(--border)}
+  .inv-boxes{grid-template-columns:1fr}.inv-box:first-child{border-right:none;border-bottom:1px solid var(--border)}
+  .s{padding:72px 18px}.prob-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="logo">Revenue<em>WithJohn</em></a>
+  <ul class="nav-mid">
+    <li><a href="#why">Why Us</a></li>
+    <li><a href="#benefits">Services</a></li>
+    <li><a href="#how">Process</a></li>
+    <li><a href="#testimonials">Results</a></li>
+  </ul>
+  <div class="nav-r">
+    <a href="https://wa.me/917061160610" class="nav-wa">💬 WhatsApp</a>
+    <a href="https://shorturl.at/JBo12" class="nav-cta">Book A Call →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-body">
+    <div class="hero-phone"><span class="hero-phone-ico">📞</span> AI Calling Agents — Live 24/7</div>
+    <h1 class="hero-h1">
+      RevenueWithJohn,
+      <span>Close More. Call Less.</span>
+    </h1>
+    <p class="hero-tag">
+      <strong>Your Competitors Are Calling Leads 24/7. You're Not.</strong><br>
+      Here's How to Outsell Them Without Hiring a Single Sales Rep.
+    </p>
+    <p class="hero-desc">
+      The AI Calling Agent system that turns cold leads into booked appointments automatically —
+      qualifying, following up, and closing deals while you sleep.
+    </p>
+    <a href="https://shorturl.at/JBo12" class="hero-btn">
+      Book Your Free Strategy Call →
+    </a>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section id="problem" class="s s-alt">
+  <div class="w">
+    <div class="lbl rev">Current Challenges</div>
+    <h2 class="h2 rev">The Problem</h2>
+    <p class="lead rev">Most businesses lose lakhs every month because their leads go cold before anyone calls them back. Sound familiar?</p>
+    <div class="prob-grid">
+      <div class="prob-cell rev d1"><span class="prob-ico">📵</span><h4>Missed Calls = Missed Revenue</h4><p>Leads call once, you miss it — they move on to your competitor forever.</p></div>
+      <div class="prob-cell rev d2"><span class="prob-ico">😴</span><h4>No 24/7 Coverage</h4><p>Your team sleeps. Leads don't wait. You lose deals at 2AM every night.</p></div>
+      <div class="prob-cell rev d3"><span class="prob-ico">💸</span><h4>Expensive Sales Reps</h4><p>Hiring, training, salaries, incentives — and they still don't follow up enough.</p></div>
+      <div class="prob-cell rev d4"><span class="prob-ico">🔁</span><h4>Zero Follow-Up System</h4><p>Most leads need 5–8 touches to convert. Your team gives up after 2 calls.</p></div>
+      <div class="prob-cell rev d5"><span class="prob-ico">📉</span><h4>Low Conversion Rates</h4><p>Unqualified leads waste your best closer's time on people who never buy.</p></div>
+      <div class="prob-cell rev d6"><span class="prob-ico">🤯</span><h4>Team Burnout</h4><p>Repetitive cold calling burns out your team fast — high turnover, low morale.</p></div>
+      <div class="prob-cell rev d7"><span class="prob-ico">📊</span><h4>No Data or Tracking</h4><p>You don't know which leads were called, what was said, or why deals were lost.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY US -->
+<section id="why" class="s">
+  <div class="w">
+    <div class="lbl rev">Our Solution</div>
+    <h2 class="h2 rev">Why Choose RevenueWithJohn</h2>
+    <p class="lead rev">We deploy AI Calling Agents that sound human, work 24/7, and never miss a follow-up — so you close more deals without adding headcount.</p>
+    <div class="why-grid">
+      <div class="why-card rev d1"><div class="why-badge">Always On</div><h4>24/7 AI Calling — Never Misses a Lead</h4><p>Your AI agent calls every new lead within 60 seconds — day or night, weekends included. No human can match that speed.</p></div>
+      <div class="why-card rev d2"><div class="why-badge">Sounds Human</div><h4>Conversations So Natural, They Won't Know</h4><p>Our AI voices pass the human test. Natural pauses, empathetic tone, real objection handling — not a robotic IVR.</p></div>
+      <div class="why-card rev d3"><div class="why-badge">Auto Follow-Up</div><h4>Follows Up 8 Times Without Fail</h4><p>AI calls, texts, and re-engages every lead on a perfect cadence until they book or opt out. Never drops the ball.</p></div>
+      <div class="why-card rev d4"><div class="why-badge">Lead Qualification</div><h4>Only Sends Hot Leads to Your Team</h4><p>AI qualifies budget, timeline, and intent before handing off. Your closers only talk to people ready to buy.</p></div>
+      <div class="why-card rev d5"><div class="why-badge">Auto Booking</div><h4>Books Appointments Directly Into Your Calendar</h4><p>When a lead is ready, AI instantly schedules them — no back-and-forth, no scheduling links, no delays.</p></div>
+      <div class="why-card rev d6"><div class="why-badge">Full Analytics</div><h4>Complete Call Transcripts & Reporting</h4><p>Every call recorded, transcribed, and scored. Know exactly what's working and where deals are being lost.</p></div>
+      <div class="why-card rev d7"><div class="why-badge">Cost Effective</div><h4>10x Cheaper Than a Full Sales Team</h4><p>One AI agent does the work of 5 sales reps at a fraction of the cost. Scale without the overhead.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- PAIN POINTS -->
+<section id="pain" class="s s-alt">
+  <div class="w">
+    <div style="text-align:center;margin-bottom:60px">
+      <div class="lbl rev" style="display:block;text-align:center">Problem & Pain Points</div>
+      <h2 class="h2 rev">You're Losing ₹Lakhs Every Month</h2>
+      <p class="lead rev" style="margin:0 auto">Because You Can't Call Every Lead Fast Enough. The math is brutal — let's look at it honestly:</p>
+    </div>
+    <div class="pain-grid">
+      <div class="pain-card rev d1">
+        <div class="pain-img-wrap"><img class="pain-img" src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop&auto=format" alt=""></div>
+        <div class="pain-body"><span class="pain-tag">Speed to Lead</span><h3>Calling Too Late</h3><p><span class="ck">✓</span>78% of customers buy from whoever calls first. If you're not calling within 5 minutes, you've already lost the deal.</p></div>
+      </div>
+      <div class="pain-card rev d2">
+        <div class="pain-img-wrap"><img class="pain-img" src="https://images.unsplash.com/photo-1423666639041-f56000c27a9a?w=400&h=250&fit=crop&auto=format" alt=""></div>
+        <div class="pain-body"><span class="pain-tag">Follow-Up Gap</span><h3>Giving Up Too Early</h3><p><span class="ck">✓</span>80% of sales need 5+ follow-ups. 92% of salespeople give up after 4 calls. Your leads need more — your team stops short.</p></div>
+      </div>
+      <div class="pain-card rev d3">
+        <div class="pain-img-wrap"><img class="pain-img" src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400&h=250&fit=crop&auto=format" alt=""></div>
+        <div class="pain-body"><span class="pain-tag">Wasted Resources</span><h3>Paying Reps to Qualify</h3><p><span class="ck">✓</span>Your ₹50K/month closer is spending 70% of their time on unqualified leads who were never going to buy.</p></div>
+      </div>
+      <div class="pain-card rev d4">
+        <div class="pain-img-wrap"><img class="pain-img" src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=250&fit=crop&auto=format" alt=""></div>
+        <div class="pain-body"><span class="pain-tag">No Visibility</span><h3>Flying Blind Without Data</h3><p><span class="ck">✓</span>You have no idea what's being said on calls, why deals are lost, or which lead source is actually converting.</p></div>
+      </div>
+      <div class="pain-card rev d5">
+        <div class="pain-img-wrap"><img class="pain-img" src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=400&h=250&fit=crop&auto=format" alt=""></div>
+        <div class="pain-body"><span class="pain-tag">Scaling Problem</span><h3>Can't Scale Without More Headcount</h3><p><span class="ck">✓</span>Every time you want to handle more leads, you have to hire, train, and manage more people. It never ends.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INVISIBLE -->
+<section id="invisible" class="s">
+  <div class="inv-wrap">
+    <div class="lbl rev" style="display:block;text-align:center">The Hard Truth</div>
+    <h2 class="h2 rev" style="font-size:clamp(30px,5vw,56px);text-align:center">The worst part? You have a great product.</h2>
+    <p class="lead rev" style="margin:0 auto 52px;text-align:center;max-width:600px">You deliver real results. But leads aren't converting because no one is following up fast enough or consistently enough.</p>
+    <div class="inv-boxes rev">
+      <div class="inv-box">
+        <div class="inv-num gold">₹50L+</div>
+        <div class="inv-lbl">Monthly Revenue</div>
+        <div class="inv-sub">Businesses with AI calling</div>
+      </div>
+      <div class="inv-box">
+        <div class="inv-num dim">Struggling</div>
+        <div class="inv-lbl">Revenue Growth</div>
+        <div class="inv-sub">Businesses without it</div>
+      </div>
+    </div>
+    <ul class="inv-list rev">
+      <li>Hot leads going cold because no one called in time</li>
+      <li>Paying sales reps to do repetitive qualification work</li>
+      <li>Losing deals to competitors who respond faster</li>
+      <li>No system — just hope that someone follows up</li>
+    </ul>
+    <p class="inv-q rev">But what if your business could call every lead within <span>60 seconds</span> — automatically — and follow up until they book?</p>
+  </div>
+</section>
+
+<!-- BENEFITS -->
+<section id="benefits" class="s s-alt">
+  <div class="w">
+    <div class="ben-hd">
+      <div class="lbl rev">Benefits & Features</div>
+      <h2 class="h2 rev">One AI Agent. Unlimited Calls. Zero Burnout.</h2>
+      <p class="lead rev" style="margin:0 auto">We don't just solve your follow-up problem. We eliminate it forever. Here's what you get:</p>
+    </div>
+    <div class="ben-block rev rl">
+      <div class="bi"><img src="https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=700&auto=format&fit=crop&q=80" alt="Instant Lead Response"></div>
+      <div class="bt">
+        <span class="ben-badge">Speed to Lead</span>
+        <h2>Calls Every Lead in Under 60 Seconds</h2>
+        <p>The moment a lead fills a form or enquires, your AI agent calls them — before they even open another tab. Speed is the #1 conversion driver.</p>
+        <ul class="fl"><li>Sub-60 second response time</li><li>Works on any lead source</li><li>Integrates with your CRM</li></ul>
+      </div>
+    </div>
+    <div class="ben-block flip rev rr">
+      <div class="bi"><img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=700&auto=format&fit=crop&q=80" alt="Human Voice AI"></div>
+      <div class="bt">
+        <span class="ben-badge">Human-Like AI</span>
+        <h2>Voices So Natural, Leads Can't Tell</h2>
+        <p>Our AI agents handle real conversations — objections, questions, pricing discussions — with empathy and intelligence. Not a menu system. A real conversation.</p>
+        <ul class="fl"><li>Natural conversational AI</li><li>Custom voice & personality</li><li>Handles objections intelligently</li></ul>
+      </div>
+    </div>
+    <div class="ben-block rev rl">
+      <div class="bi"><img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=700&auto=format&fit=crop&q=80" alt="Auto Booking"></div>
+      <div class="bt">
+        <span class="ben-badge">Auto Booking</span>
+        <h2>Books Meetings Directly Into Your Calendar</h2>
+        <p>No Calendly links. No "what time works for you?" emails. AI checks availability and books the meeting in real-time, mid-conversation.</p>
+        <ul class="fl"><li>Real-time calendar integration</li><li>Sends confirmation & reminders</li><li>Zero manual scheduling</li></ul>
+      </div>
+    </div>
+    <div class="ben-block flip rev rr">
+      <div class="bi"><img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=700&auto=format&fit=crop&q=80" alt="Analytics Dashboard"></div>
+      <div class="bt">
+        <span class="ben-badge">Full Analytics</span>
+        <h2>Every Call Tracked, Transcribed & Scored</h2>
+        <p>Get full visibility into every conversation. AI scores calls, flags objections, and tells you exactly why leads convert or don't — so you can optimize endlessly.</p>
+        <ul class="fl"><li>Call recording & transcription</li><li>Lead scoring & tagging</li><li>Revenue attribution reports</li></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="s">
+  <div class="w">
+    <div class="how-hd">
+      <div class="lbl rev">Our Process</div>
+      <h2 class="h2 rev">How It Works</h2>
+      <p class="lead rev" style="margin:0 auto">From Setup to First Booked Call in 7 Days — Guaranteed</p>
+    </div>
+    <div style="height:40px"></div>
+    <div class="steps rev">
+      <div class="step">
+        <div class="step-nbg">01</div>
+        <span class="step-n">01</span>
+        <h3>Discovery & Setup Call (60 mins)</h3>
+        <p>We learn your business, your offer, your ideal customer, and your current sales process. You talk, we listen.</p>
+        <div class="step-dots">
+          <div class="step-dot">Business & offer deep-dive</div>
+          <div class="step-dot">Lead source integration</div>
+          <div class="step-dot">CRM & calendar connect</div>
+        </div>
+        <img class="step-img" src="https://images.unsplash.com/photo-1573497491765-dccce02b29df?w=300&auto=format&fit=crop&q=60" alt="">
+      </div>
+      <div class="step">
+        <div class="step-nbg">02</div>
+        <span class="step-n">02</span>
+        <h3>AI Agent Build & Training</h3>
+        <p>We build and train your custom AI calling agent — with your brand voice, your script, and your objection handlers.</p>
+        <div class="step-dots">
+          <div class="step-dot">Custom voice & personality</div>
+          <div class="step-dot">Script & flow design</div>
+          <div class="step-dot">Objection handling training</div>
+        </div>
+        <img class="step-img" src="https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=300&auto=format&fit=crop&q=60" alt="">
+      </div>
+      <div class="step">
+        <div class="step-nbg">03</div>
+        <span class="step-n">03</span>
+        <h3>Test, Launch & Go Live</h3>
+        <p>We run test calls, fine-tune the conversations, and launch your agent live — fully connected to your pipeline.</p>
+        <div class="step-dots">
+          <div class="step-dot">Live call testing</div>
+          <div class="step-dot">Quality assurance review</div>
+          <div class="step-dot">Full pipeline launch</div>
+        </div>
+        <img class="step-img" src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&auto=format&fit=crop&q=60" alt="">
+      </div>
+      <div class="step">
+        <div class="step-nbg">04</div>
+        <span class="step-n">04</span>
+        <h3>Optimize & Scale</h3>
+        <p>We monitor every call, optimize scripts weekly, and scale your agent to handle 100s of simultaneous calls as you grow.</p>
+        <div class="step-dots">
+          <div class="step-dot">Weekly performance review</div>
+          <div class="step-dot">Continuous script updates</div>
+          <div class="step-dot">Unlimited scale — no extra cost</div>
+        </div>
+        <img class="step-img" src="https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=300&auto=format&fit=crop&q=60" alt="">
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:44px">
+      <a href="https://shorturl.at/JBo12" class="btn-main rev">See If You Qualify →</a>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials" class="s s-alt">
+  <div class="w">
+    <div class="testi-hd">
+      <div class="lbl rev">Client Results</div>
+      <h2 class="h2 rev">Real Businesses. Real Revenue.</h2>
+      <p class="lead rev" style="margin:0 auto">What happens when AI calls your leads before your competitors do:</p>
+    </div>
+    <div class="testi-outer">
+      <div class="t-col"><div class="t-track">
+        <div class="tcard"><p class="tcard-q">We went from converting 8% of leads to 31% in the first month. The AI calls faster than any human team ever could.</p><div class="tcard-ft"><div class="tcard-av">R</div><div><div class="tcard-name">Rahul Mehta</div><div class="tcard-role">Real Estate Developer</div></div></div></div>
+        <div class="tcard"><p class="tcard-q">Replaced 3 sales reps with one AI agent. Same revenue, 70% lower cost. John's system is genuinely revolutionary.</p><div class="tcard-ft"><div class="tcard-av">P</div><div><div class="tcard-name">Pooja Sharma</div><div class="tcard-role">EdTech Founder</div></div></div></div>
+        <div class="tcard"><p class="tcard-q">The AI books 40+ qualified appointments every week on autopilot. Our closers now only talk to people ready to buy.</p><div class="tcard-ft"><div class="tcard-av">A</div><div><div class="tcard-name">Arjun Kapoor</div><div class="tcard-role">Insurance Agency Owner</div></div></div></div>
+        <div class="tcard"><p class="tcard-q">We were losing leads because we couldn't call fast enough. Now every lead gets called in 45 seconds. Game changer.</p><div class="tcard-ft"><div class="tcard-av">S</div><div><div class="tcard-name">Sneha Patel</div><div class="tcard-role">D2C Brand Founder</div></div></div></div>
+        <div class="tcard"><p class="tcard-q">We went from converting 8% of leads to 31% in the first month. The AI calls faster than any human team ever could.</p><div class="tcard-ft"><div class="tcard-av">R</div><div><div class="tcard-name">Rahul Mehta</div><div class="tcard-role">Real Estate Developer</div></div></div></div>
+        <div class="tcard"><p class="tcard-q">Replaced 3 sales reps with one AI agent. Same revenue, 70% lower cost. John's system is genuinely revolutionary.</p><div class="tcard-ft"><div class="tcard-av">P</div><div><div class="tcard-name">Pooja Sharma</div><div class="tcard-role">EdTech Founder</div></div></div></div>
+        <div class="tcard"><p class="tcard-q">The AI books 40+ qualified appointments every week on autopilot. Our closers now only talk to people ready to buy.</p><div class="tcard-ft"><div class="tcard-av">A</div><div><div class="tcard-name">Arjun Kapoor</div><div class="tcard-role">Insurance Agency Owner</div></div></div></div>
+        <div class="tcard"><p class="tcard-q">We were losing leads because we couldn't call fast enough. Now every lead gets called in 45 seconds. Game changer.</p><div class="tcard-ft"><div class="tcard-av">S</div><div><div class="tcard-name">Sneha Patel</div><div class="tcard-role">D2C Brand Founder</div></div></div></div>
+      </div></div>
+      <div class="t-col"><div class="t-track b">
+        <div class="tcard"><p class="tcard-q">₹12L in closed deals in the first 45 days. I couldn't believe the numbers. The ROI is absolutely insane.</p><div class="tcard-ft"><div class="tcard-av">V</div><div><div class="tcard-name">Vikram Nair</div><div class="tcard-role">Solar Energy Business</div></div></div></div>
+        <div class="tcard"><p class="tcard-q">Our show-up rate for appointments went from 55% to 87%. The AI sends reminders and re-confirms automatically.</p><div class="tcard-ft"><div class="tcard-av">M</div><div><div class="tcard-name">Meera Joshi</div><div class="tcard-role">Coaching Business</div></div></div></div>
+        <div class="tcard"><p class="tcard-q">Set it up in a week, and the AI has been running non-stop for 3 months. Zero downtime. Hundreds of calls daily.</p><div class="tcard-ft"><div class="tcard-av">K</div><div><div class="tcard-name">Karan Bose</div><div class="tcard-role">SaaS Startup Founder</div></div></div></div>
+        <div class="tcard"><p class="tcard-q">I was skeptical that AI could replace human callers. After seeing the transcripts and conversions, I'm a believer.</p><div class="tcard-ft"><div class="tcard-av">N</div><div><div class="tcard-name">Nisha Gupta</div><div class="tcard-role">Healthcare Clinic Owner</div></div></div></div>
+        <div class="tcard"><p class="tcard-q">₹12L in closed deals in the first 45 days. I couldn't believe the numbers. The ROI is absolutely insane.</p><div class="tcard-ft"><div class="tcard-av">V</div><div><div class="tcard-name">Vikram Nair</div><div class="tcard-role">Solar Energy Business</div></div></div></div>
+        <div class="tcard"><p class="tcard-q">Our show-up rate for appointments went from 55% to 87%. The AI sends reminders and re-confirms automatically.</p><div class="tcard-ft"><div class="tcard-av">M</div><div><div class="tcard-name">Meera Joshi</div><div class="tcard-role">Coaching Business</div></div></div></div>
+        <div class="tcard"><p class="tcard-q">Set it up in a week, and the AI has been running non-stop for 3 months. Zero downtime. Hundreds of calls daily.</p><div class="tcard-ft"><div class="tcard-av">K</div><div><div class="tcard-name">Karan Bose</div><div class="tcard-role">SaaS Startup Founder</div></div></div></div>
+        <div class="tcard"><p class="tcard-q">I was skeptical that AI could replace human callers. After seeing the transcripts and conversions, I'm a believer.</p><div class="tcard-ft"><div class="tcard-av">N</div><div><div class="tcard-name">Nisha Gupta</div><div class="tcard-role">Healthcare Clinic Owner</div></div></div></div>
+      </div></div>
+      <div class="t-col"><div class="t-track c">
+        <div class="tcard"><p class="tcard-q">Best decision I made for my business. The AI handled 340 calls last week. My team would have needed a week for that.</p><div class="tcard-ft"><div class="tcard-av">D</div><div><div class="tcard-name">Deepak Rao</div><div class="tcard-role">Financial Advisor</div></div></div></div>
+        <div class="tcard"><p class="tcard-q">Revenue up 180% in 90 days. Not because we changed our offer — because we finally stopped losing leads to slow follow-up.</p><div class="tcard-ft"><div class="tcard-av">T</div><div><div class="tcard-name">Tanvi Singh</div><div class="tcard-role">Digital Marketing Agency</div></div></div></div>
+        <div class="tcard"><p class="tcard-q">The call quality is unbelievable. Leads think they're talking to a real person. Conversion rate jumped 3x immediately.</p><div class="tcard-ft"><div class="tcard-av">H</div><div><div class="tcard-name">Harsh Malhotra</div><div class="tcard-role">E-commerce Store Owner</div></div></div></div>
+        <div class="tcard"><p class="tcard-q">John walked us through everything. Setup was smooth, results were instant. This is the future of sales, no doubt.</p><div class="tcard-ft"><div class="tcard-av">A</div><div><div class="tcard-name">Ananya Verma</div><div class="tcard-role">Wellness Brand Founder</div></div></div></div>
+        <div class="tcard"><p class="tcard-q">Best decision I made for my business. The AI handled 340 calls last week. My team would have needed a week for that.</p><div class="tcard-ft"><div class="tcard-av">D</div><div><div class="tcard-name">Deepak Rao</div><div class="tcard-role">Financial Advisor</div></div></div></div>
+        <div class="tcard"><p class="tcard-q">Revenue up 180% in 90 days. Not because we changed our offer — because we finally stopped losing leads to slow follow-up.</p><div class="tcard-ft"><div class="tcard-av">T</div><div><div class="tcard-name">Tanvi Singh</div><div class="tcard-role">Digital Marketing Agency</div></div></div></div>
+        <div class="tcard"><p class="tcard-q">The call quality is unbelievable. Leads think they're talking to a real person. Conversion rate jumped 3x immediately.</p><div class="tcard-ft"><div class="tcard-av">H</div><div><div class="tcard-name">Harsh Malhotra</div><div class="tcard-role">E-commerce Store Owner</div></div></div></div>
+        <div class="tcard"><p class="tcard-q">John walked us through everything. Setup was smooth, results were instant. This is the future of sales, no doubt.</p><div class="tcard-ft"><div class="tcard-av">A</div><div><div class="tcard-name">Ananya Verma</div><div class="tcard-role">Wellness Brand Founder</div></div></div></div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section id="stats">
+  <div class="stats-row">
+    <div class="stat-item rev d1"><div class="stat-n" id="s1">500<em>+</em></div><div class="stat-l">Calls Made Daily</div></div>
+    <div class="stat-sep rev"></div>
+    <div class="stat-item rev d2"><div class="stat-n" id="s2">3x<em></em></div><div class="stat-l">Average Conversion Lift</div></div>
+    <div class="stat-sep rev"></div>
+    <div class="stat-item rev d3"><div class="stat-n" id="s3">60<em>sec</em></div><div class="stat-l">Speed to First Call</div></div>
+    <div class="stat-sep rev"></div>
+    <div class="stat-item rev d4"><div class="stat-n" id="s4">10x<em></em></div><div class="stat-l">Cheaper Than a Sales Rep</div></div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section id="cta">
+  <div class="w">
+    <div class="cta-block rev rs">
+      <div class="cta-img">
+        <img src="https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=700&h=500&fit=crop&auto=format" alt="">
+      </div>
+      <div class="cta-txt">
+        <div class="lbl">Limited Spots Available</div>
+        <h2 class="h2">Every Day You Wait, Your Leads Are Calling Someone Else</h2>
+        <p class="body">Right now, leads you paid for are going cold. Your competitors are calling them back. Every hour without an AI calling agent is revenue walking out the door.</p>
+        <p class="note">We only onboard <strong>5 new clients per month</strong> to ensure every setup gets full attention. Once spots fill — they're gone until next month.</p>
+        <div class="cta-btns">
+          <a href="https://shorturl.at/JBo12" class="btn-main">Claim Your Free Strategy Call →</a>
+          <a href="https://wa.me/917061160610" class="btn-sec">💬 Chat on WhatsApp First</a>
+        </div>
+        <p class="ps">P.S. Try our AI agent for <strong>14 days free</strong>. If you don't see more booked calls, <strong>you pay nothing</strong>. Zero risk.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot">
+    <div class="foot-top">
+      <div>
+        <a href="#" class="foot-logo">Revenue<em>WithJohn</em></a>
+        <p class="foot-desc">AI Calling Agents that call every lead in under 60 seconds, qualify automatically, and book appointments into your calendar — 24/7.</p>
+      </div>
+      <div class="foot-col">
+        <h5>Quick Links</h5>
+        <ul>
+          <li><a href="#">Home</a></li>
+          <li><a href="#why">Why Us</a></li>
+          <li><a href="#benefits">Services</a></li>
+          <li><a href="#how">Process</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h5>Get In Touch</h5>
+        <ul>
+          <li><a href="https://shorturl.at/JBo12">Book A Call</a></li>
+          <li><a href="https://wa.me/917061160610">WhatsApp</a></li>
+          <li><a href="mailto:revenuewithjohn@gmail.com">Email John</a></li>
+          <li><a href="#">Instagram</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bot">
+      <span>© 2025 RevenueWithJohn. All rights reserved.</span>
+      <span>Made with ❤️ in India 🇮🇳</span>
+    </div>
+  </div>
+</footer>
+
+<a href="https://wa.me/917061160610" class="wa" target="_blank" rel="noopener">💬</a>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+/* Scroll Reveal - robust version */
+function revealAll() {
+  document.querySelectorAll('.rev').forEach(el => {
+    el.style.opacity = '1';
+    el.style.transform = 'none';
+  });
+}
+
+if ('IntersectionObserver' in window) {
+  // Reset to hidden first for animation
+  document.querySelectorAll('.rev').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(30px)';
+  });
+  
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'none';
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.05, rootMargin: '0px 0px -20px 0px' });
+  
+  document.querySelectorAll('.rev').forEach(el => obs.observe(el));
+  
+  // Fallback: after 3 seconds show everything anyway
+  setTimeout(revealAll, 3000);
+} else {
+  revealAll();
+}
+
+/* Nav shrink */
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('s', window.scrollY > 60);
+}, { passive: true });
+
+/* Stats counter */
+function count(el, to, sfx, dur = 1600) {
+  let v = 0, step = to / (dur / 16);
+  const t = setInterval(() => {
+    v += step;
+    if (v >= to) { v = to; clearInterval(t); }
+    el.innerHTML = Math.floor(v) + '<em>' + sfx + '</em>';
+  }, 16);
+}
+const sObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    sObs.unobserve(e.target);
+    setTimeout(() => count(document.getElementById('s1'), 500, '+'), 0);
+    setTimeout(() => count(document.getElementById('s3'), 60, '
